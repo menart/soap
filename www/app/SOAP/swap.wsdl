@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+             xmlns:tns="http://this_server/soap"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+             xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+             name="SwapWsdl"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+    <types>
+        <xs:schema elementFormDefault="qualified"
+                   xmlns:tns="http://schemas.xmlsoap.org/wsdl/"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   targetNamespace="http://this_server/soap">
+            <xs:complexType name="Swaps">
+                <xs:sequence>
+                    <xs:element name="time" type="xs:decimal" minOccurs="1" maxOccurs="1" />
+                    <xs:element name="array" type="xs:string" minOccurs="1" maxOccurs="1" />
+                    <xs:element name="count" type="xs:decimal" minOccurs="1" maxOccurs="1" />
+                    <xs:element name="swaps" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="Request">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="inputArray" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Response">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="swapsList" type="Swaps" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </types>
+    <!-- Сообщения процедуры sendSms -->
+    <message name="arrayRequest">
+        <part name="Request" element="tns:Request" />
+    </message>
+    <message name="swapResponse">
+        <part name="Response" element="tns:Response" />
+    </message>
+    <!-- Привязка процедуры к сообщениям -->
+    <portType name="SwapServicePortType">
+        <operation name="swapArray">
+            <input message="tns:arrayRequest" />
+            <output message="tns:swapResponse" />
+        </operation>
+    </portType>
+    <!--Формат процедур веб-сервиса -->
+    <binding name="SwapServiceBinding" type="tns:SwapServicePortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="swapArray">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+    </binding>
+    <!--Определение сервиса -->
+    <service name="SwapService">
+        <port name="SwapServicePort" binding="tns:SwapServiceBinding">
+            <soap:address location="http://this_server:80/soap" />
+        </port>
+    </service>
+</definitions>

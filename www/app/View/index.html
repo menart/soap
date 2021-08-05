@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .result {
+            width: 80%;
+            min-height: 20px;
+            border: 1px solid black;
+            margin: 10px;
+            box-shadow: 5px 5px #aaa;
+        }
+    </style>
+</head>
+<body>
+Массив: <input type="text" id="arr">
+<br>
+<button onclick="calc()">вычислить REST</button>
+<button onclick="calcSoap()">вычислить SOAP</button>
+<div class="result">
+    <table id="result_table"></table>
+</div>
+<script>
+	let xmlSoap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+		'<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" ' +
+		'xmlns:ns1="http://192.168.100.3:80/soap">' +
+		'<env:Body><env:swapArray>' +
+		'<Request>' +
+		'<ns1:inputArray>123</ns1:inputArray>' +
+		'</Request></env:swapArray></env:Body></env:Envelope>';
+
+	function calcSoap() {
+		const url = "/soap/";
+		let inputArrayValue = document.getElementById('arr').value.split(',');
+		let sendArray = '';
+		for (const arr of inputArrayValue) {
+			sendArray += '<ns1:inputArray>' + arr + '</ns1:inputArray>';
+		}
+		let xmlSoap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+			'<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" ' +
+			'xmlns:ns1="http://192.168.100.3:80/soap">' +
+			'<env:Body><env:swapArray>' +
+			'<Request>' + sendArray + '</Request>' +
+			'</env:swapArray></env:Body></env:Envelope>';
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'text/xml; charset=utf-8'
+			},
+			body: xmlSoap,
+		})
+			.then(response => response.text())
+			.then(xml => {
+				const parser = new DOMParser();
+				const dom = parser.parseFromString(xml, "application/xml");
+				const data = dom.querySelector('Response');
+				const swapsList = data.getElementsByTagName('ns1:swapsList');
+				for (const swapsListItem of swapsList) {
+					const strTime = swapsListItem.getElementsByTagName('time')[0].innerHTML;
+					const strCount = swapsListItem.getElementsByTagName('count')[0].innerHTML;
+					const strArray = swapsListItem.getElementsByTagName('array')[0].innerHTML;
+					const arrayObjSwaps = swapsListItem.getElementsByTagName('xsd:string');
+					console.log(arrayObjSwaps);
+					let arraySwaps = [];
+					for (let item of arrayObjSwaps) {
+						arraySwaps.push(item.innerHTML);
+					}
+					let tr = document.createElement('tr');
+					let second_td = strCount + ' (' + arraySwaps.join(', ') + ')<br/>' + strTime / 100000 + 'c.';
+					tr.innerHTML = '<td>' + strArray + '</td><td>' + second_td + '</td>';
+					document.getElementById('result_table').append(tr);
+				}
+			})
+	}
+
+	function calc() {
+		const url = "/main/calc";
+		const formData = new FormData();
+		formData.append('type', 'json');
+		formData.append('arr', document.getElementById('arr').value);
+
+		fetch(url, {
+			method: 'POST',
+			body: formData,
+		})
+			.then(response => response.json())
+			.then(data => {
+				for (let dataItem of data) {
+					let tr = document.createElement('tr');
+					let second_td = dataItem.count + ' (' + dataItem.swaps.join(', ') + ')<br/>' + dataItem.time / 100000 + 'c.';
+					tr.innerHTML = '<td>' + dataItem.array + '</td><td>' + second_td + '</td>';
+					document.getElementById('result_table').append(tr);
+				}
+			})
+	}
+</script>
+</body>
+</html>

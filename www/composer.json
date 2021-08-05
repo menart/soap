@@ -1,0 +1,17 @@
+{
+  "name": "menart/rossko_test",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "menart",
+      "email": "aleksandr@artamonov.in"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "": "app/"
+    }
+  }
+}
